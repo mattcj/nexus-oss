@@ -36,7 +36,7 @@ Ext.define('NX.coreui.controller.HealthCheckSearch', {
   ],
   refs: [
     { ref: 'searchResult', selector: 'nx-coreui-search-result-list' },
-    { ref: 'searchResultDetails', selector: 'nx-coreui-search-result-details' }
+    { ref: 'componentDetails', selector: 'nx-coreui-component-details' }
   ],
 
   /**
@@ -55,6 +55,10 @@ Ext.define('NX.coreui.controller.HealthCheckSearch', {
         'nx-coreui-search-result-list': {
           afterrender: me.bindHealthCheckColumns,
           selection: me.onSelection
+        },
+        'nx-coreui-browse-result-list': {
+          afterrender: me.bindHealthCheckColumns,
+          selection: me.onSelection
         }
       }
     });
@@ -65,7 +69,7 @@ Ext.define('NX.coreui.controller.HealthCheckSearch', {
    */
   onSelection: function(grid, model) {
     var me = this,
-        searchResultDetails = me.getSearchResultDetails(),
+        componentDetails = me.getComponentDetails(),
         info3 = {};
 
     if (!grid['healthCheckColumns']) {
@@ -73,7 +77,7 @@ Ext.define('NX.coreui.controller.HealthCheckSearch', {
     }
 
     info3[NX.I18n.get('BROWSE_SEARCH_VERSIONS_POPULAR')] = me.renderMostPopularVersion(model);
-    searchResultDetails.down('#info3').showInfo(info3);
+    componentDetails.down('#info3').showInfo(info3);
   },
 
   /**
@@ -85,7 +89,7 @@ Ext.define('NX.coreui.controller.HealthCheckSearch', {
         components = [],
         searchResult = me.getSearchResult();
 
-    if (!searchResult['healthCheckColumns']) {
+    if (!searchResult || !searchResult['healthCheckColumns']) {
       return;
     }
 

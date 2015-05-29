@@ -13,47 +13,53 @@
 /*global Ext, NX*/
 
 /**
- * Assets / search results grid.
+ * Search results grid.
  *
  * @since 3.0
  */
-Ext.define('NX.coreui.view.search.SearchResultAssetList', {
+Ext.define('NX.coreui.view.browse.BrowseResultList', {
   extend: 'NX.view.drilldown.Master',
-  alias: 'widget.nx-coreui-search-result-asset-list',
+  alias: 'widget.nx-coreui-browse-result-list',
   requires: [
     'NX.I18n'
   ],
 
-  store: 'Asset',
+  config: {
+    stateful: true,
+    stateId: 'nx-coreui-browse-result-list'
+  },
 
-  allowDeselect: true,
+  store: 'BrowseResult',
+
+  style: {
+    'background-color': '#F4F4F4'
+  },
 
   viewConfig: {
-    emptyText: 'No assets found',
+    emptyText: NX.I18n.get('Browse_BrowseResultList_EmptyText_View'),
     deferEmptyText: false
   },
 
   columns: [
     {
       xtype: 'nx-iconcolumn',
-      dataIndex: 'type',
       width: 36,
       iconVariant: 'x16',
-      iconNamePrefix: 'repository-item-type-',
-      iconName: function (value) {
-        if (NX.getApplication().getIconController().findIcon('repository-item-type-' + value, 'x16')) {
-          return value;
-        }
-        return 'default';
+      iconName: function () {
+        return 'browse-component';
       }
     },
-    { header: NX.I18n.get('BROWSE_SEARCH_ASSETS_NAME_COLUMN'), dataIndex: 'name', flex: 2.5 }
+    { header: NX.I18n.get('Browse_BrowseResultList_Name_Column'), dataIndex: 'name', stateId: 'name', flex: 3 },
+    { header: NX.I18n.get('Browse_BrowseResultList_Group_Column'), dataIndex: 'group', stateId: 'group', flex: 4 },
+    { header: NX.I18n.get('Browse_BrowseResultList_Version_Column'), dataIndex: 'version', stateId: 'version', flex: 1 },
   ],
 
-  features: [
+  dockedItems: [
     {
-      ftype: 'grouping',
-      groupHeaderTpl: '{columnName}: {name}'
+      xtype: 'pagingtoolbar',
+      store: 'BrowseResult',
+      dock: 'top',
+      displayInfo: false
     }
   ]
 

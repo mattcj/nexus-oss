@@ -346,7 +346,7 @@ Ext.define('NX.controller.Drilldown', {
     // Model specified, find the associated list and show that
     for (var i = 0; i < lists.length; ++i) {
       if (list === lists[i].getView() && model) {
-        lists[i].fireEvent("selection", list, model);
+        lists[i].fireEvent('selection', list.up('grid'), model);
         me.onModelChanged(model);
 
         // Set all child bookmarks
@@ -433,7 +433,6 @@ Ext.define('NX.controller.Drilldown', {
   navigateTo: function (bookmark) {
     var me = this,
         lists = me.getLists(),
-        feature = me.getFeature(),
         list_ids, tab_id = null, model, modelId, index;
 
     if (lists.length && bookmark) {
@@ -457,7 +456,7 @@ Ext.define('NX.controller.Drilldown', {
           // Select rows
           model = lists[index].getStore().getById(modelId);
           if (model) {
-            lists[index].fireEvent("selection", lists[index], model);
+            lists[index].fireEvent('selection', lists[index], model);
             me.onModelChanged(model);
           }
 

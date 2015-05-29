@@ -46,17 +46,21 @@ Ext.define('NX.coreui.view.component.AssetContainer', {
    * @public
    * Shows an asset in container.
    */
-  refreshInfo: function() {
+  refreshInfo: function(componentModel, assetModel) {
     var me = this,
-        iconName = 'repository-item-type-default';
+        iconName = 'asset-type-default',
+        contentType;
+
+    me.componentModel = componentModel;
+    me.assetModel = assetModel;
 
     if (me.componentModel && me.assetModel) {
       if (me.hidden) {
         me.show();
       }
-      if (NX.getApplication().getIconController().findIcon('repository-item-type-' + me.assetModel.get('contentType'),
-          'x16')) {
-        iconName = 'repository-item-type-' + me.assetModel.get('contentType');
+      contentType = me.assetModel.get('contentType').replace('/', '-');
+      if (NX.getApplication().getIconController().findIcon('asset-type-' + contentType, 'x16')) {
+        iconName = 'asset-type-' + contentType;
       }
       me.setIconCls(NX.Icons.cls(iconName, 'x16'));
       me.setTitle(me.assetModel.get('name'));

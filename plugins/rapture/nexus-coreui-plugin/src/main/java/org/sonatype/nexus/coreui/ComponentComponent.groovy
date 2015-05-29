@@ -53,6 +53,11 @@ class ComponentComponent
   RepositoryManager repositoryManager
 
   @DirectMethod
+  List<ComponentXO> read(final StoreLoadParameters parameters) {
+    return readComponentsAdAssets(parameters.getFilter('repositoryName'))
+  }
+
+  @DirectMethod
   List<AssetXO> readAssets(final StoreLoadParameters parameters) {
     return readAssets(parameters.getFilter('repositoryName'), parameters.getFilter('componentId'))
   }
@@ -72,11 +77,38 @@ class ComponentComponent
         return null
       }
 
-      return storageTx.browseAssets(component).collect {asset ->
+      return storageTx.browseAssets(component).collect { asset ->
         new AssetXO(
             id: asset.entityMetadata.id,
             name: asset.name() ?: component.name(),
             contentType: asset.contentType()
+        )
+      }
+    }
+    finally {
+      storageTx.close()
+    }
+  }
+
+  @Validate
+  List<ComponentXO> readComponentsAdAssets(final @NotNull String repositoryName) {
+    Repository repository = repositoryManager.get(repositoryName)
+    securityHelper.ensurePermitted(new RepositoryViewPermission(repository, READ))
+
+    if (!repository.configuration.online) {
+      return null
+    }
+
+    StorageTx storageTx = repository.facet(StorageFacet).openTx()
+    try {
+      return storageTx.browseComponents(storageTx.getBucket()).collect { component ->
+        new ComponentXO(
+            id: component.entityMetadata.id,
+            repositoryName: repository.name,
+            group: component.group(),
+            name: component.name(),
+            version: component.version(),
+            format: component.format()
         )
       }
     }

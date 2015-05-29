@@ -13,17 +13,22 @@
 /*global Ext, NX*/
 
 /**
- * Search result details panel.
+ * Component details panel.
  *
  * @since 3.0
  */
-Ext.define('NX.coreui.view.search.SearchResultDetails', {
+Ext.define('NX.coreui.view.component.ComponentDetails', {
   extend: 'Ext.panel.Panel',
-  alias: 'widget.nx-coreui-search-result-details',
+  alias: 'widget.nx-coreui-component-details',
   requires: [
     'NX.Icons'
   ],
   ui: 'nx-inset',
+
+  /**
+   * Currently shown component model.
+   */
+  componentModel: undefined,
 
   layout: {
     type: 'hbox',
@@ -37,15 +42,23 @@ Ext.define('NX.coreui.view.search.SearchResultDetails', {
   /**
    * @override
    */
-  initComponent: function () {
+  initComponent: function() {
     var me = this;
 
     me.items = [
-      { xtype: 'nx-info', itemId: 'info1' },
-      { xtype: 'nx-info', itemId: 'info2' },
-      { xtype: 'nx-info', itemId: 'info3' }
+      {xtype: 'nx-info', itemId: 'info1'},
+      {xtype: 'nx-info', itemId: 'info2'},
+      {xtype: 'nx-info', itemId: 'info3'}
     ];
 
     me.callParent();
+  },
+
+  setComponentModel: function(componentModel) {
+    var me = this;
+
+    me.componentModel = componentModel;
+    me.fireEvent('updated', me, me.componentModel);
   }
+
 });
