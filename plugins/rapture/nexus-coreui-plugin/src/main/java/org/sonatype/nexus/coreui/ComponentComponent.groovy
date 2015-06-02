@@ -20,8 +20,11 @@ import javax.validation.constraints.NotNull
 import org.sonatype.nexus.common.entity.EntityId
 import org.sonatype.nexus.extdirect.DirectComponent
 import org.sonatype.nexus.extdirect.DirectComponentSupport
+import org.sonatype.nexus.extdirect.model.PagedResponse
 import org.sonatype.nexus.extdirect.model.StoreLoadParameters
+import org.sonatype.nexus.repository.MissingFacetException
 import org.sonatype.nexus.repository.Repository
+import org.sonatype.nexus.repository.group.GroupFacet
 import org.sonatype.nexus.repository.manager.RepositoryManager
 import org.sonatype.nexus.repository.security.RepositoryViewPermission
 import org.sonatype.nexus.repository.storage.Component
@@ -30,6 +33,7 @@ import org.sonatype.nexus.repository.storage.StorageTx
 import org.sonatype.nexus.security.SecurityHelper
 import org.sonatype.nexus.validation.Validate
 
+import com.google.common.collect.ImmutableList
 import com.softwarementors.extjs.djn.config.annotations.DirectAction
 import com.softwarementors.extjs.djn.config.annotations.DirectMethod
 
@@ -53,8 +57,52 @@ class ComponentComponent
   RepositoryManager repositoryManager
 
   @DirectMethod
-  List<ComponentXO> read(final StoreLoadParameters parameters) {
-    return readComponentsAdAssets(parameters.getFilter('repositoryName'))
+  PagedResponse<ComponentXO> read(final StoreLoadParameters parameters) {
+    Repository repository = repositoryManager.get(parameters.getFilter('repositoryName'))
+    securityHelper.ensurePermitted(new RepositoryViewPermission(repository, READ))
+
+    if (!repository.configuration.online) {
+      return null
+    }
+
+    def sort = parameters.sort?.get(0)
+    def querySuffix = ''
+    if (sort) {
+      querySuffix += " ORDER BY ${sort.property} ${sort.direction}"
+    }
+    if (parameters.start) {
+      querySuffix += " SKIP ${parameters.start}"
+    }
+    if (parameters.limit) {
+      querySuffix += " LIMIT ${parameters.limit}"
+    }
+
+    StorageTx storageTx = repository.facet(StorageFacet).openTx()
+    try {
+      def repositories
+      try {
+        repositories = repository.facet(GroupFacet).leafMembers()
+      }
+      catch (MissingFacetException e) {
+        repositories = ImmutableList.of(repository)
+      }
+      return new PagedResponse<ComponentXO>(
+          storageTx.countComponents(null, null, repositories, null),
+          storageTx.findComponents(null, null, repositories, querySuffix).collect { component ->
+            new ComponentXO(
+                id: component.entityMetadata.id,
+                repositoryName: repository.name,
+                group: component.group(),
+                name: component.name(),
+                version: component.version(),
+                format: component.format()
+            )
+          }
+      )
+    }
+    finally {
+      storageTx.close()
+    }
   }
 
   @DirectMethod
@@ -82,33 +130,6 @@ class ComponentComponent
             id: asset.entityMetadata.id,
             name: asset.name() ?: component.name(),
             contentType: asset.contentType()
-        )
-      }
-    }
-    finally {
-      storageTx.close()
-    }
-  }
-
-  @Validate
-  List<ComponentXO> readComponentsAdAssets(final @NotNull String repositoryName) {
-    Repository repository = repositoryManager.get(repositoryName)
-    securityHelper.ensurePermitted(new RepositoryViewPermission(repository, READ))
-
-    if (!repository.configuration.online) {
-      return null
-    }
-
-    StorageTx storageTx = repository.facet(StorageFacet).openTx()
-    try {
-      return storageTx.browseComponents(storageTx.getBucket()).collect { component ->
-        new ComponentXO(
-            id: component.entityMetadata.id,
-            repositoryName: repository.name,
-            group: component.group(),
-            name: component.name(),
-            version: component.version(),
-            format: component.format()
         )
       }
     }
