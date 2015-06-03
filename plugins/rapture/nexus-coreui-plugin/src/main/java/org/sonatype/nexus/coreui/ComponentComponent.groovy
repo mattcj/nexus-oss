@@ -69,6 +69,12 @@ class ComponentComponent
     def querySuffix = ''
     if (sort) {
       querySuffix += " ORDER BY ${sort.property} ${sort.direction}"
+      if (sort.property == StorageFacet.P_GROUP) {
+        querySuffix += ", ${StorageFacet.P_NAME} ASC,${StorageFacet.P_VERSION} ASC"
+      }
+      else if (sort.property == StorageFacet.P_NAME) {
+        querySuffix += ", ${StorageFacet.P_VERSION} ASC,${StorageFacet.P_GROUP} ASC"
+      }
     }
     if (parameters.start) {
       querySuffix += " SKIP ${parameters.start}"
@@ -82,22 +88,25 @@ class ComponentComponent
       def repositories
       try {
         repositories = repository.facet(GroupFacet).leafMembers()
+        querySuffix = " GROUP BY ${StorageFacet.P_GROUP},${StorageFacet.P_NAME},${StorageFacet.P_VERSION}" + querySuffix
       }
       catch (MissingFacetException e) {
         repositories = ImmutableList.of(repository)
       }
+
+      List<ComponentXO> results = storageTx.findComponents(null, null, repositories, querySuffix).collect { component ->
+        new ComponentXO(
+            id: component.entityMetadata.id,
+            repositoryName: repository.name,
+            group: component.group(),
+            name: component.name(),
+            version: component.version(),
+            format: component.format()
+        )
+      }
       return new PagedResponse<ComponentXO>(
-          storageTx.countComponents(null, null, repositories, null),
-          storageTx.findComponents(null, null, repositories, querySuffix).collect { component ->
-            new ComponentXO(
-                id: component.entityMetadata.id,
-                repositoryName: repository.name,
-                group: component.group(),
-                name: component.name(),
-                version: component.version(),
-                format: component.format()
-            )
-          }
+          (results.size() < parameters.limit ? 0 : parameters.limit) + results.size() + parameters.start,
+          results
       )
     }
     finally {
