@@ -33,7 +33,7 @@ Ext.define('NX.view.drilldown.Master', {
 
     // Refresh drilldown affordances on load, and when a column is added
     me.on('viewready', function(view) { view.refreshDrilldown(view.headerCt) });
-    //me.headerCt.on('add', me.refreshDrilldown);
+    me.headerCt.on('add', me.refreshDrilldown);
   },
 
   /**
