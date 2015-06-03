@@ -50,6 +50,8 @@ import static org.sonatype.nexus.repository.security.BreadActions.READ
 class ComponentComponent
     extends DirectComponentSupport
 {
+  private static String UNATTACHED = "unattached";
+
   @Inject
   SecurityHelper securityHelper
 
@@ -104,6 +106,13 @@ class ComponentComponent
             format: component.format()
         )
       }
+      if (parameters.start == 0 && readUnattachedAssets(storageTx, repository).size()) {
+        results = new ArrayList<>(results)
+        results.add(0, new ComponentXO(
+            id: UNATTACHED,
+            repositoryName: repository.name
+        ))
+      }
       return new PagedResponse<ComponentXO>(
           (results.size() < parameters.limit ? 0 : parameters.limit) + results.size() + parameters.start,
           results
@@ -129,21 +138,37 @@ class ComponentComponent
     }
     StorageTx storageTx = repository.facet(StorageFacet).openTx()
     try {
-      Component component = storageTx.findComponent(new EntityId(componentId), storageTx.getBucket())
-      if (component == null) {
-        return null
+      if (componentId == UNATTACHED) {
+        return readUnattachedAssets(storageTx, repository)
       }
+      else {
+        Component component = storageTx.findComponent(new EntityId(componentId), storageTx.getBucket())
+        if (component == null) {
+          return null
+        }
 
-      return storageTx.browseAssets(component).collect { asset ->
-        new AssetXO(
-            id: asset.entityMetadata.id,
-            name: asset.name() ?: component.name(),
-            contentType: asset.contentType()
-        )
+        return storageTx.browseAssets(component).collect { asset ->
+          new AssetXO(
+              id: asset.entityMetadata.id,
+              name: asset.name() ?: component.name(),
+              contentType: asset.contentType()
+          )
+        }
       }
     }
     finally {
       storageTx.close()
+    }
+  }
+
+  private List<AssetXO> readUnattachedAssets(final StorageTx storageTx, final Repository repository) {
+    ImmutableList<Repository> repositories = ImmutableList.of(repository)
+    return storageTx.findAssets("${StorageFacet.P_COMPONENT} IS NULL", null, repositories, null).collect { asset ->
+      new AssetXO(
+          id: asset.entityMetadata.id,
+          name: asset.name(),
+          contentType: asset.contentType()
+      )
     }
   }
 }

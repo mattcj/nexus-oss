@@ -43,13 +43,24 @@ Ext.define('NX.coreui.view.browse.BrowseResultList', {
   columns: [
     {
       xtype: 'nx-iconcolumn',
+      dataIndex: 'id',
       width: 36,
       iconVariant: 'x16',
-      iconName: function () {
+      iconName: function (value) {
+        if (value === 'unattached') {
+          return 'browse-unattached';
+        }
         return 'browse-component';
       }
     },
-    { header: NX.I18n.get('Browse_BrowseResultList_Name_Column'), dataIndex: 'name', stateId: 'name', flex: 3 },
+    { header: NX.I18n.get('Browse_BrowseResultList_Name_Column'), dataIndex: 'name', stateId: 'name', flex: 3,
+      renderer: function (value) {
+        if(!value) {
+          return NX.I18n.get('Browse_BrowseResultList_Name_Column_Unattached');
+        }
+        return value;
+      }
+    },
     { header: NX.I18n.get('Browse_BrowseResultList_Group_Column'), dataIndex: 'group', stateId: 'group', flex: 4 },
     { header: NX.I18n.get('Browse_BrowseResultList_Version_Column'), dataIndex: 'version', stateId: 'version', flex: 1 },
   ]
