@@ -52,15 +52,6 @@ Ext.define('NX.coreui.view.browse.BrowseResultList', {
     { header: NX.I18n.get('Browse_BrowseResultList_Name_Column'), dataIndex: 'name', stateId: 'name', flex: 3 },
     { header: NX.I18n.get('Browse_BrowseResultList_Group_Column'), dataIndex: 'group', stateId: 'group', flex: 4 },
     { header: NX.I18n.get('Browse_BrowseResultList_Version_Column'), dataIndex: 'version', stateId: 'version', flex: 1 },
-  ],
-
-  dockedItems: [
-    {
-      xtype: 'pagingtoolbar',
-      store: 'BrowseResult',
-      dock: 'top',
-      displayInfo: false
-    }
   ]
 
 });
