@@ -44,6 +44,7 @@ Ext.define('NX.coreui.controller.Browse', {
 
   refs: [
     {ref: 'feature', selector: 'nx-coreui-browsefeature'},
+    {ref: 'results', selector: 'nx-coreui-browsefeature nx-coreui-browse-result-list'},
     {ref: 'componentDetails', selector: 'nx-coreui-browsefeature nx-coreui-component-details'},
     {ref: 'assets', selector: 'nx-coreui-browsefeature nx-coreui-component-asset-list'}
   ],
@@ -117,8 +118,10 @@ Ext.define('NX.coreui.controller.Browse', {
    */
   onRepositorySelection: function(model) {
     var me = this,
-        browseResultStore = me.getBrowseResultStore();
+        browseResultStore = me.getBrowseResultStore(),
+        results = me.getResults();
 
+    results.getSelectionModel().deselectAll();
     browseResultStore.addFilter([
       {
         id: 'repositoryName',
