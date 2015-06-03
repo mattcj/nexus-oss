@@ -85,7 +85,7 @@ Ext.define('NX.coreui.app.PluginConfig', {
       }
     },
     {
-      id: 'NX.coreui.controller.HealthCheckSearch',
+      id: 'NX.coreui.controller.HealthCheckColumns',
       active: function () {
         return NX.app.Application.bundleActive('com.sonatype.nexus.plugins.nexus-healthcheck-oss-plugin')
             || NX.app.Application.bundleActive('com.sonatype.nexus.plugins.nexus-clm-plugin');

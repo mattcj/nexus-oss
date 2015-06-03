@@ -13,11 +13,11 @@
 /*global Ext, NX*/
 
 /**
- * HealthCheck search contribution controller.
+ * HealthCheck columns contribution controller.
  *
  * @since 3.0
  */
-Ext.define('NX.coreui.controller.HealthCheckSearch', {
+Ext.define('NX.coreui.controller.HealthCheckColumns', {
   extend: 'Ext.app.Controller',
   requires: [
     'Ext.grid.column.Column',
