@@ -36,6 +36,16 @@ Ext.define('NX.coreui.store.Asset', {
   },
 
   remoteFilter: true,
-  sorters: { property: 'name', direction: 'ASC' }
+  sorters: { property: 'name', direction: 'ASC' },
+
+  // HACK: this avoid NPE's in nexus due to drilldown loading lists / clearing filters like crazy
+  // FIXME: remove this when drilldown loading of multiple lists are fixed
+  load: function() {
+    var me = this;
+
+    if (me.filters.length) {
+      me.callParent();
+    }
+  }
 
 });
